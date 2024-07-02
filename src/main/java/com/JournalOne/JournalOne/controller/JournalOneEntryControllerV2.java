@@ -21,7 +21,7 @@ public class JournalOneEntryControllerV2 {
     // Methods inside a controller class should be public so that they can be accessed and invoked by the spring framework or external http requests
     @GetMapping("/get-all-journals")
     public List<JournalOneEntries> getAllJournals(){
-        return new ArrayList<>(journalOneEntriesMap.values());
+        return journalEntryService.getAll();
     }
 
     @PostMapping("/create-journal")
