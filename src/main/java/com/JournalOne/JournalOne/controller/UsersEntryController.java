@@ -76,12 +76,12 @@ public class UsersEntryController {
         }
     }
 
-    @PutMapping("/update-user-by-id/{userId}")
-    public ResponseEntity<?> updateUser(@PathVariable("userId") ObjectId userId, @RequestBody User user) {
+    @PutMapping("/update-user-by-username/{username}")
+    public ResponseEntity<?> updateUser(@PathVariable("username") String userName, @RequestBody User user) {
         try {
             boolean isValidUserDetails = user.getUserName() != null && !user.getUserName().isEmpty();
             if (isValidUserDetails) {
-                User user1 = userService.findUserById(userId).orElse(null);
+                User user1 = userService.findByUserName(userName).orElse(null);
                 if (user1 != null) {
                     user1.setUserName(!Objects.equals(user1.getUserName(), user.getUserName()) ? user.getUserName() : user1.getUserName());
                     user1.setPassword(!Objects.equals(user1.getPassword(), user.getPassword()) ? user.getPassword() : user1.getPassword());
@@ -106,10 +106,10 @@ public class UsersEntryController {
                     .body(customErrorResponseInternalServerError);
         }
     }
-    @GetMapping("/get-user-by-id/{userId}")
-    public ResponseEntity<?> getUserById(@PathVariable("userId") ObjectId userId ) {
+    @GetMapping("/get-user-by-username/{username}")
+    public ResponseEntity<?> getUserById(@PathVariable("username") String username ) {
         try {
-            User userData= userService.findUserById(userId).orElse(null);
+            User userData= userService.findByUserName(username).orElse(null);
             if (userData !=null) {
                 return new ResponseEntity<>(userData, HttpStatus.OK);
             }
