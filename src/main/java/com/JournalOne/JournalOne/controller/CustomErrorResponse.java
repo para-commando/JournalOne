@@ -1,11 +1,11 @@
-package com.JournalOne.JournalOne.utils;
+package com.JournalOne.JournalOne.controller;
 
 import lombok.Data;
 import org.springframework.stereotype.Component;
 
 @Component
 @Data
-public class CustomErrorResponse {
+class CustomErrorResponse {
     private String message;
     private int status;
     private String error;

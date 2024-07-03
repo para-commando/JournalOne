@@ -15,8 +15,9 @@ public class UserService {
     @Autowired
     private UserRepo userRepo;
 
-    public void saveUserEntry(User users){
+    public boolean saveUserEntry(User users){
         userRepo.save(users);
+        return true;
     }
 
     public List<User> getAllUsers()
