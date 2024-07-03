@@ -13,65 +13,66 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.*;
-  class CustomErrorResponse {
-    private String message;
-    private int status;
-    private String error;
 
-    public CustomErrorResponse(String message, int status, String error) {
-        this.message = message;
-        this.status = status;
-        this.error = error;
-    }
-
-    // Getters and setters
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
-    public String getError() {
-        return error;
-    }
-
-    public void setError(String error) {
-        this.error = error;
-    }
-}
 
 @RestController
 @RequestMapping("/users")
 public class UsersEntryController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private CustomErrorResponse customErrorResponseInternalServerError;
+    @Autowired
+    private CustomErrorResponse customErrorResponseNotFoundError;
    // private Map<St, User> userMap = new HashMap<>();
     @GetMapping("/get-all-users")
     public ResponseEntity<?> getAllUsers() {
         try {
             List<?> userDetails = userService.getAllUsers();
-            throw new Exception(); // Simulate an error for demonstration
-            // if (userDetails != null) {
-            //     return new ResponseEntity<>(userDetails, HttpStatus.OK);
-            // }
-            // return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//            throw new Exception(); // Simulate an error for demonstration
+             if (userDetails != null) {
+                 return new ResponseEntity<>(userDetails, HttpStatus.OK);
+             }
+            customErrorResponseNotFoundError.setError("No data found");
+            customErrorResponseNotFoundError.setMessage("No data found");
+            customErrorResponseNotFoundError.setStatus(HttpStatus.NOT_FOUND.value());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(customErrorResponseNotFoundError);
         } catch (Exception e) {
-            CustomErrorResponse errorResponse = new CustomErrorResponse("An error occurred", HttpStatus.INTERNAL_SERVER_ERROR.value(), "An error");
+
+            customErrorResponseInternalServerError.setError("An error");
+            customErrorResponseInternalServerError.setMessage("An error message");
+            customErrorResponseInternalServerError.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(errorResponse);
+                    .body(customErrorResponseInternalServerError);
         }
     }
 
+    @PostMapping("/create-user")
+    public ResponseEntity<?> createUser(@RequestBody User user) {
+        try {
+            boolean userDetails = userService.saveUserEntry(user);
+//            throw new Exception(); // Simulate an error for demonstration
+            if (userDetails) {
+                return new ResponseEntity<>(user, HttpStatus.OK);
+            }
+            customErrorResponseNotFoundError.setError("User data creation failed");
+            customErrorResponseNotFoundError.setMessage("User data creation failed, please try again");
+            customErrorResponseNotFoundError.setStatus(HttpStatus.NOT_IMPLEMENTED.value());
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(customErrorResponseNotFoundError);
+        } catch (Exception e) {
+
+            customErrorResponseInternalServerError.setError("Internal Server Error");
+            customErrorResponseInternalServerError.setMessage("Internal Server Error Occurred, please try again");
+            customErrorResponseInternalServerError.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(customErrorResponseInternalServerError);
+        }
+    }
 
 }
