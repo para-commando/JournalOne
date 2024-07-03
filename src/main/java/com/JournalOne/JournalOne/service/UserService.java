@@ -31,8 +31,9 @@ public class UserService {
         return userRepo.findById(id);
     }
 
-    public void deleteUserById(ObjectId id)
+    public boolean deleteUserById(ObjectId id)
     {
         userRepo.deleteById(id);
+        return true;
     }
 }
