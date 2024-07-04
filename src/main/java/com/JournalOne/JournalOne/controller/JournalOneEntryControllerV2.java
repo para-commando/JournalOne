@@ -1,11 +1,16 @@
 package com.JournalOne.JournalOne.controller;
 
 import com.JournalOne.JournalOne.entity.JournalOneEntries;
+import com.JournalOne.JournalOne.entity.User;
+import com.JournalOne.JournalOne.repository.UserRepo;
 import com.JournalOne.JournalOne.service.JournalEntryService;
+import com.JournalOne.JournalOne.service.UserService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -17,29 +22,63 @@ public class JournalOneEntryControllerV2 {
 
     @Autowired
     private JournalEntryService journalEntryService;
+
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private CustomErrorResponse customErrorResponseNotFoundError;
+
+    @Autowired
+    private CustomErrorResponse customErrorResponseInternalServerError;
     private Map<Long, JournalOneEntries> journalOneEntriesMap = new HashMap<>();
 
     // Methods inside a controller class should be public so that they can be accessed and invoked by the spring framework or external http requests
-    @GetMapping("/get-all-journals")
-    public ResponseEntity<?> getAllJournals() {
-        List<?> allRecords = journalEntryService.getAll();
-        if (allRecords != null && !allRecords.isEmpty()) {
-            return new ResponseEntity<>(allRecords, HttpStatus.OK);
+    @GetMapping("/get-all-journals/{username}")
+    public ResponseEntity<?> getAllJournals(@PathVariable("username") String username) {
+        try {
+            User user = userService.findByUserName(username).orElse(null);
+            if (user != null) {
+                List<JournalOneEntries> allRecords = user.getJournalOneEntriesList();
+                if (allRecords != null && !allRecords.isEmpty()) {
+                    return new ResponseEntity<>(allRecords, HttpStatus.OK);
+                }
+            }
+            customErrorResponseNotFoundError.setError("Not found");
+            customErrorResponseNotFoundError.setMessage("No Journals found for the given username");
+            customErrorResponseNotFoundError.setStatus(HttpStatus.NOT_FOUND.value());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(customErrorResponseNotFoundError);
+        } catch (Exception e) {
+            customErrorResponseInternalServerError.setError("Internal Server Error");
+            customErrorResponseInternalServerError.setMessage("Internal Server Error Occurred, please try again");
+            customErrorResponseInternalServerError.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(customErrorResponseInternalServerError);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PostMapping("/create-journal")
-    public ResponseEntity<JournalOneEntries> createJournal(@RequestBody JournalOneEntries journalOneEntry) {
+    @PostMapping("/create-journal/{username}")
+    @Transactional
+    public ResponseEntity<?> createJournal(@PathVariable("username") String username, @RequestBody JournalOneEntries journalOneEntry) {
         //  adding @RequestBody is like asking the spring to take data from request and then turn it into a java object that can be used in the code
 
         // calling setter method for the class variable Date
-        journalOneEntry.setDate(LocalDateTime.now());
+
         try {
-            journalEntryService.saveEntry(journalOneEntry);
-            return new ResponseEntity<>(journalOneEntry, HttpStatus.OK);
+            journalOneEntry.setDate(LocalDateTime.now());
+            journalEntryService.saveEntry(journalOneEntry, username);
+            return new ResponseEntity<>(HttpStatus.OK);
+
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            System.out.println("Error is"+ e);
+            customErrorResponseInternalServerError.setError("Internal Server Error");
+            customErrorResponseInternalServerError.setMessage("Internal Server Error Occurred, please try again");
+            customErrorResponseInternalServerError.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(customErrorResponseInternalServerError);
         }
 
 
@@ -64,24 +103,60 @@ public class JournalOneEntryControllerV2 {
 
     }
 
-    @DeleteMapping("/delete-element-by-id/{journalId}")
-    public ResponseEntity<?> deleteJournalById(@PathVariable("journalId") ObjectId journalId) {
+    @DeleteMapping("/delete-element-by-id/{journalId}/{username}")
+    public ResponseEntity<?> deleteJournalById(@PathVariable("journalId") ObjectId journalId, @PathVariable("username") String username) {
         // when used "?" it means that an object of any return type can be sent
-        journalEntryService.deleteElementById(journalId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        try {
+            JournalOneEntries journalOneEntries = journalEntryService.findElementById(journalId).orElse(null);
+            if (journalOneEntries != null) {
+                journalEntryService.deleteElementById(journalId,username);
+                return new ResponseEntity<>(HttpStatus.OK);
+            }
+            customErrorResponseNotFoundError.setError("Deletion failed");
+            customErrorResponseNotFoundError.setMessage("No journal found for the given id");
+            customErrorResponseNotFoundError.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(customErrorResponseNotFoundError);
+
+        } catch (Exception e) {
+            customErrorResponseInternalServerError.setError("Internal Server Error");
+            customErrorResponseInternalServerError.setMessage("Internal Server Error Occurred, please try again");
+            customErrorResponseInternalServerError.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(customErrorResponseInternalServerError);
+        }
     }
 
-    @PutMapping("/update-element-by-id/{journalId}")
-    public ResponseEntity<JournalOneEntries> updateJournalById(@PathVariable("journalId") ObjectId journalId, @RequestBody JournalOneEntries journalOneEntry) {
+    @PutMapping("/update-element-by-id/{journalId}/{username}")
+    public ResponseEntity<?> updateJournalById(@PathVariable("journalId") ObjectId journalId, @PathVariable("username") String username, @RequestBody JournalOneEntries journalOneEntry) {
         // journalOneEntriesMap.put(journalId,journalOneEntry);
-        JournalOneEntries prevJournalEntry = journalEntryService.findElementById(journalId).orElse(null);
-        if (prevJournalEntry != null) {
-            prevJournalEntry.setTitle(journalOneEntry.getTitle() != null && !journalOneEntry.getTitle().isEmpty() && !Objects.equals(journalOneEntry.getTitle(), prevJournalEntry.getTitle()) ? journalOneEntry.getTitle() : prevJournalEntry.getTitle());
-            prevJournalEntry.setContent(journalOneEntry.getContent() != null && !journalOneEntry.getContent().isEmpty() && !Objects.equals(journalOneEntry.getContent(), prevJournalEntry.getContent()) ? journalOneEntry.getContent() : prevJournalEntry.getContent());
-            journalEntryService.saveEntry(prevJournalEntry);
-            return new ResponseEntity<>(prevJournalEntry, HttpStatus.OK);
+        try {
+            JournalOneEntries prevJournalEntry = journalEntryService.findElementById(journalId).orElse(null);
+
+            if (prevJournalEntry != null ) {
+                prevJournalEntry.setTitle(!journalOneEntry.getTitle().isEmpty() && !Objects.equals(journalOneEntry.getTitle(), prevJournalEntry.getTitle()) ? journalOneEntry.getTitle() : prevJournalEntry.getTitle());
+                prevJournalEntry.setContent(journalOneEntry.getContent() != null && !journalOneEntry.getContent().isEmpty() && !Objects.equals(journalOneEntry.getContent(), prevJournalEntry.getContent()) ? journalOneEntry.getContent() : prevJournalEntry.getContent());
+                journalEntryService.saveEntry(prevJournalEntry, username);
+                return new ResponseEntity<>(prevJournalEntry, HttpStatus.OK);
+            }
+            customErrorResponseNotFoundError.setError("Not found");
+            customErrorResponseNotFoundError.setMessage("No Journals or User found for the given data");
+            customErrorResponseNotFoundError.setStatus(HttpStatus.NOT_FOUND.value());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(customErrorResponseNotFoundError);
+        } catch (Exception e) {
+            customErrorResponseInternalServerError.setError("Internal Server Error");
+            customErrorResponseInternalServerError.setMessage("Internal Server Error Occurred, please try again");
+            customErrorResponseInternalServerError.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(customErrorResponseInternalServerError);
         }
 
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+
     }
 }
