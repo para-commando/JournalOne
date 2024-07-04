@@ -6,6 +6,7 @@ import com.JournalOne.JournalOne.repository.UserRepo;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +37,7 @@ public class UserService {
         userRepo.deleteById(id);
         return true;
     }
+
     public Optional<User> findByUserName(String userName)
     {
         return userRepo.findByUserName(userName);

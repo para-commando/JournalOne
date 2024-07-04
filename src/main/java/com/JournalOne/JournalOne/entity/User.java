@@ -1,6 +1,7 @@
 package com.JournalOne.JournalOne.entity;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 @Document(collection = "Users")
 @Data
+@NoArgsConstructor
 public class User {
     @Id
     private ObjectId id;
