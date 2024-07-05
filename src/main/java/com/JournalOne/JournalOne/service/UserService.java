@@ -5,9 +5,11 @@ import com.JournalOne.JournalOne.entity.User;
 import com.JournalOne.JournalOne.repository.UserRepo;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,8 +18,17 @@ public class UserService {
     @Autowired
     private UserRepo userRepo;
 
-    public boolean saveUserEntry(User users){
-        userRepo.save(users);
+    // BCryptPasswordEncoder is just one implementation of PasswordEncoder
+    private static final PasswordEncoder passwordEncoder  = new BCryptPasswordEncoder();
+
+    public boolean saveNewEntry(User user){
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRoles(Arrays.asList("USER", "ADMIN"));
+        userRepo.save(user);
+        return true;
+    }
+    public boolean saveUser(User user){
+        userRepo.save(user);
         return true;
     }
 
