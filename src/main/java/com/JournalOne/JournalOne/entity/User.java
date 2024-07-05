@@ -29,7 +29,6 @@ public class User {
     // creates many-to-one relationship between Users collection and JournalCollections collection
     @DBRef
     private List<JournalOneEntries> journalOneEntriesList = new ArrayList<>();
-
-
+    private List<String> roles;
 
 }
