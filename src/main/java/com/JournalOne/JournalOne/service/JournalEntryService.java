@@ -24,7 +24,8 @@ public class JournalEntryService {
         User user =  userService.findByUserName(username).orElseThrow();
         JournalOneEntries saved = journalEntryRepo.save(journalOneEntries);
         user.getJournalOneEntriesList().add(saved);
-        userService.saveUserEntry(user);
+        System.out.println("user is"+user);
+        userService.saveUser(user);
     }
 
     public List<JournalOneEntries> getAll()
@@ -42,8 +43,13 @@ public class JournalEntryService {
     public void deleteElementById(ObjectId id,String username)
     {
         User userRepo = userService.findByUserName(username).orElseThrow();
-        userRepo.getJournalOneEntriesList().removeIf(journal->journal.getId().equals(id));
-        userService.saveUserEntry(userRepo);
-        journalEntryRepo.deleteById(id);
+       boolean isRemoved = userRepo.getJournalOneEntriesList().removeIf(journal->journal.getId().equals(id));
+       if(isRemoved) {
+           userService.saveNewEntry(userRepo);
+           journalEntryRepo.deleteById(id);
+       }
+       else {
+           throw new RuntimeException("Journal Deletion failed");
+       }
     }
 }

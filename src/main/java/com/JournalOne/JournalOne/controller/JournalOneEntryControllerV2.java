@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/journals")
@@ -91,19 +92,20 @@ public class JournalOneEntryControllerV2 {
 
     @GetMapping("/get-element-by-id/{journalId}")
     public ResponseEntity<JournalOneEntries> getJournalById(@PathVariable("journalId") ObjectId journalId)  {
-//         journalEntryService.findElementById(journalId)
-//                .map(ResponseEntity::ok)
-//                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String username = authentication.getName();
             User user = userService.findByUserName(username).orElseThrow(()->new NoSuchElementException("User not found"));
-            System.out.println("adfsdfsdf"+ user.getJournalOneEntriesList());
-            Optional<JournalOneEntries> journalOneEntries = journalEntryService.findElementById(journalId);
-            if (journalOneEntries.isPresent()) {
-                return new ResponseEntity<>(journalOneEntries.get(), HttpStatus.OK);
+
+            List<JournalOneEntries> collectionOfUserJournals = user.getJournalOneEntriesList().stream().filter(x->x.getId().equals(journalId)).collect(Collectors.toList());
+            if(!collectionOfUserJournals.isEmpty())
+            {
+                Optional<JournalOneEntries> journalOneEntries = journalEntryService.findElementById(journalId);
+                if (journalOneEntries.isPresent()) {
+                    return new ResponseEntity<>(journalOneEntries.get(), HttpStatus.OK);
+                }
             }
-            ;
+
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -140,16 +142,28 @@ public class JournalOneEntryControllerV2 {
         }
     }
 
-    @PutMapping("/update-element-by-id/{journalId}/{username}")
-    public ResponseEntity<?> updateJournalById(@PathVariable("journalId") ObjectId journalId, @PathVariable("username") String username, @RequestBody JournalOneEntries journalOneEntry) {
+    @PutMapping("/update-element-by-id/{journalId}")
+    public ResponseEntity<?> updateJournalById(@PathVariable("journalId") ObjectId journalId, @RequestBody JournalOneEntries journalOneEntry) {
         // journalOneEntriesMap.put(journalId,journalOneEntry);
         try {
             JournalOneEntries prevJournalEntry = journalEntryService.findElementById(journalId).orElse(null);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
 
+            User user = userService.findByUserName(username).orElseThrow(()->new NoSuchElementException("User not found"));
             if (prevJournalEntry != null) {
                 prevJournalEntry.setTitle(!journalOneEntry.getTitle().isEmpty() && !Objects.equals(journalOneEntry.getTitle(), prevJournalEntry.getTitle()) ? journalOneEntry.getTitle() : prevJournalEntry.getTitle());
                 prevJournalEntry.setContent(journalOneEntry.getContent() != null && !journalOneEntry.getContent().isEmpty() && !Objects.equals(journalOneEntry.getContent(), prevJournalEntry.getContent()) ? journalOneEntry.getContent() : prevJournalEntry.getContent());
                 journalEntryService.saveEntry(prevJournalEntry, username);
+
+                List<JournalOneEntries> collectionOfUserJournals = user.getJournalOneEntriesList().stream().filter(x->x.getId().equals(journalId)).collect(Collectors.toList());
+                if(!collectionOfUserJournals.isEmpty())
+                {
+                    Optional<JournalOneEntries> journalOneEntries = journalEntryService.findElementById(journalId);
+                    if (journalOneEntries.isPresent()) {
+                        return new ResponseEntity<>(journalOneEntries.get(), HttpStatus.OK);
+                    }
+                }
                 return new ResponseEntity<>(prevJournalEntry, HttpStatus.OK);
             }
             customErrorResponseNotFoundError.setError("Not found");

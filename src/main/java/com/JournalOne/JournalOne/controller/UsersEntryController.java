@@ -1,20 +1,15 @@
 package com.JournalOne.JournalOne.controller;
 
-import com.JournalOne.JournalOne.entity.JournalOneEntries;
 import com.JournalOne.JournalOne.entity.User;
-import com.JournalOne.JournalOne.service.JournalEntryService;
 import com.JournalOne.JournalOne.service.UserService;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -66,7 +61,7 @@ public class UsersEntryController {
                 if (user1 != null) {
                     user1.setUserName(!Objects.equals(user1.getUserName(), user.getUserName()) ? user.getUserName() : user1.getUserName());
                     user1.setPassword(!Objects.equals(user1.getPassword(), user.getPassword()) ? user.getPassword() : user1.getPassword());
-                    boolean userDetails = userService.saveUserEntry(user1);
+                    boolean userDetails = userService.saveNewEntry(user1);
 
                 }
                 return new ResponseEntity<>(user, HttpStatus.OK);

@@ -25,7 +25,7 @@ public class PublicController {
     public ResponseEntity<?> createUser(@RequestBody User user) {
         try {
 
-            boolean userDetails = userService.saveUserEntry(user);
+            boolean userDetails = userService.saveNewEntry(user);
 //            throw new Exception(); // Simulate an error for demonstration
             if (userDetails) {
                 return new ResponseEntity<>(user, HttpStatus.OK);

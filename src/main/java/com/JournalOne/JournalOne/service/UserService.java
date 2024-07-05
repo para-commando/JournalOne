@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,13 +21,13 @@ public class UserService {
     // BCryptPasswordEncoder is just one implementation of PasswordEncoder
     private static final PasswordEncoder passwordEncoder  = new BCryptPasswordEncoder();
 
-    public boolean saveUserEntry(User user){
+    public boolean saveNewEntry(User user){
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRoles(Arrays.asList("USER", "ADMIN"));
         userRepo.save(user);
         return true;
     }
-    public boolean saveNewUser(User user){
+    public boolean saveUser(User user){
         userRepo.save(user);
         return true;
     }
