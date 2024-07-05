@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
+
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,25 +20,22 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SpringSecurity {
 
     @Autowired
-    @Lazy
     private UserDetailsServiceImpl userDetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        return http.authorizeHttpRequests(request -> request
-                        .requestMatchers("/journals/**", "/users/**").authenticated())
+        return http.authorizeHttpRequests(request -> request.requestMatchers("/public/**").permitAll().requestMatchers("/journals/**", "/users/**").authenticated().anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .build();
 
     }
-
-    // use this method or declare spring.main.allow-circular-references=true in application.properties
     @Autowired
-    GetPasswordEncrypter getPasswordEncrypter;
+    GetPasswordEncoder getPasswordEncoder;
+
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(getPasswordEncrypter.passwordEncoder());
+        auth.userDetailsService(userDetailsService).passwordEncoder(getPasswordEncoder.passwordEncoder());
     }
 
 

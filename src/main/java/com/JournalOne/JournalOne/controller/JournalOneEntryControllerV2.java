@@ -90,11 +90,15 @@ public class JournalOneEntryControllerV2 {
     }
 
     @GetMapping("/get-element-by-id/{journalId}")
-    public ResponseEntity<JournalOneEntries> getJournalById(@PathVariable("journalId") ObjectId journalId) {
+    public ResponseEntity<JournalOneEntries> getJournalById(@PathVariable("journalId") ObjectId journalId)  {
 //         journalEntryService.findElementById(journalId)
 //                .map(ResponseEntity::ok)
 //                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
         try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
+            User user = userService.findByUserName(username).orElseThrow(()->new NoSuchElementException("User not found"));
+            System.out.println("adfsdfsdf"+ user.getJournalOneEntriesList());
             Optional<JournalOneEntries> journalOneEntries = journalEntryService.findElementById(journalId);
             if (journalOneEntries.isPresent()) {
                 return new ResponseEntity<>(journalOneEntries.get(), HttpStatus.OK);
