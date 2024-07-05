@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,12 +32,13 @@ public class JournalOneEntryControllerV2 {
 
     @Autowired
     private CustomErrorResponse customErrorResponseInternalServerError;
-    private Map<Long, JournalOneEntries> journalOneEntriesMap = new HashMap<>();
 
     // Methods inside a controller class should be public so that they can be accessed and invoked by the spring framework or external http requests
-    @GetMapping("/get-all-journals/{username}")
-    public ResponseEntity<?> getAllJournals(@PathVariable("username") String username) {
+    @GetMapping("/get-all-journals")
+    public ResponseEntity<?> getAllJournals() {
         try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
             User user = userService.findByUserName(username).orElse(null);
             if (user != null) {
                 List<JournalOneEntries> allRecords = user.getJournalOneEntriesList();
@@ -59,20 +62,22 @@ public class JournalOneEntryControllerV2 {
         }
     }
 
-    @PostMapping("/create-journal/{username}")
+    @PostMapping("/create-journal")
     @Transactional
-    public ResponseEntity<?> createJournal(@PathVariable("username") String username, @RequestBody JournalOneEntries journalOneEntry) {
+    public ResponseEntity<?> createJournal(@RequestBody JournalOneEntries journalOneEntry) {
         //  adding @RequestBody is like asking the spring to take data from request and then turn it into a java object that can be used in the code
 
         // calling setter method for the class variable Date
 
         try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
             journalOneEntry.setDate(LocalDateTime.now());
             journalEntryService.saveEntry(journalOneEntry, username);
             return new ResponseEntity<>(HttpStatus.OK);
 
         } catch (Exception e) {
-            System.out.println("Error is"+ e);
+            System.out.println("Error is" + e);
             customErrorResponseInternalServerError.setError("Internal Server Error");
             customErrorResponseInternalServerError.setMessage("Internal Server Error Occurred, please try again");
             customErrorResponseInternalServerError.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -103,13 +108,15 @@ public class JournalOneEntryControllerV2 {
 
     }
 
-    @DeleteMapping("/delete-element-by-id/{journalId}/{username}")
-    public ResponseEntity<?> deleteJournalById(@PathVariable("journalId") ObjectId journalId, @PathVariable("username") String username) {
+    @DeleteMapping("/delete-element-by-id/{journalId}")
+    public ResponseEntity<?> deleteJournalById(@PathVariable("journalId") ObjectId journalId) {
         // when used "?" it means that an object of any return type can be sent
         try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
             JournalOneEntries journalOneEntries = journalEntryService.findElementById(journalId).orElse(null);
             if (journalOneEntries != null) {
-                journalEntryService.deleteElementById(journalId,username);
+                journalEntryService.deleteElementById(journalId, username);
                 return new ResponseEntity<>(HttpStatus.OK);
             }
             customErrorResponseNotFoundError.setError("Deletion failed");
@@ -135,7 +142,7 @@ public class JournalOneEntryControllerV2 {
         try {
             JournalOneEntries prevJournalEntry = journalEntryService.findElementById(journalId).orElse(null);
 
-            if (prevJournalEntry != null ) {
+            if (prevJournalEntry != null) {
                 prevJournalEntry.setTitle(!journalOneEntry.getTitle().isEmpty() && !Objects.equals(journalOneEntry.getTitle(), prevJournalEntry.getTitle()) ? journalOneEntry.getTitle() : prevJournalEntry.getTitle());
                 prevJournalEntry.setContent(journalOneEntry.getContent() != null && !journalOneEntry.getContent().isEmpty() && !Objects.equals(journalOneEntry.getContent(), prevJournalEntry.getContent()) ? journalOneEntry.getContent() : prevJournalEntry.getContent());
                 journalEntryService.saveEntry(prevJournalEntry, username);
@@ -155,7 +162,6 @@ public class JournalOneEntryControllerV2 {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(customErrorResponseInternalServerError);
         }
-
 
 
     }
