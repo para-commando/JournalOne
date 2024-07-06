@@ -151,19 +151,11 @@ public class JournalOneEntryControllerV2 {
             String username = authentication.getName();
 
             User user = userService.findByUserName(username).orElseThrow(()->new NoSuchElementException("User not found"));
-            if (prevJournalEntry != null) {
+            List<JournalOneEntries> collectionOfUserJournals = user.getJournalOneEntriesList().stream().filter(x->x.getId().equals(journalId)).collect(Collectors.toList());
+            if (!collectionOfUserJournals.isEmpty() && prevJournalEntry != null) {
                 prevJournalEntry.setTitle(!journalOneEntry.getTitle().isEmpty() && !Objects.equals(journalOneEntry.getTitle(), prevJournalEntry.getTitle()) ? journalOneEntry.getTitle() : prevJournalEntry.getTitle());
                 prevJournalEntry.setContent(journalOneEntry.getContent() != null && !journalOneEntry.getContent().isEmpty() && !Objects.equals(journalOneEntry.getContent(), prevJournalEntry.getContent()) ? journalOneEntry.getContent() : prevJournalEntry.getContent());
                 journalEntryService.saveEntry(prevJournalEntry, username);
-
-                List<JournalOneEntries> collectionOfUserJournals = user.getJournalOneEntriesList().stream().filter(x->x.getId().equals(journalId)).collect(Collectors.toList());
-                if(!collectionOfUserJournals.isEmpty())
-                {
-                    Optional<JournalOneEntries> journalOneEntries = journalEntryService.findElementById(journalId);
-                    if (journalOneEntries.isPresent()) {
-                        return new ResponseEntity<>(journalOneEntries.get(), HttpStatus.OK);
-                    }
-                }
                 return new ResponseEntity<>(prevJournalEntry, HttpStatus.OK);
             }
             customErrorResponseNotFoundError.setError("Not found");

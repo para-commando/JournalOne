@@ -22,16 +22,27 @@ public class UserService {
     private static final PasswordEncoder passwordEncoder  = new BCryptPasswordEncoder();
 
     public boolean saveNewEntry(User user){
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(Arrays.asList("USER", "ADMIN"));
-        userRepo.save(user);
-        return true;
+        try {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setRoles(Arrays.asList("USER"));
+            userRepo.save(user);
+            return true;
+        }catch (Exception e)
+        {
+            return false;
+        }
+
     }
     public boolean saveUser(User user){
         userRepo.save(user);
         return true;
     }
-
+    public boolean saveNewAdmin(User user){
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRoles(Arrays.asList("USER","ADMIN"));
+        userRepo.save(user);
+        return true;
+    }
     public List<User> getAllUsers()
     {
        return userRepo.findAll();
