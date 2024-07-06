@@ -104,3 +104,4 @@ Icon
 
 #secrets
 *application.properties
+application.yaml
