@@ -5,6 +5,7 @@ import com.JournalOne.JournalOne.entity.User;
 import com.JournalOne.JournalOne.repository.UserRepo;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -64,4 +65,6 @@ public class UserService {
     {
         return userRepo.findByUserName(userName);
     }
+
+
 }
