@@ -1,6 +1,7 @@
 package com.JournalOne.JournalOne.controller;
 
 import com.JournalOne.JournalOne.entity.User;
+import com.JournalOne.JournalOne.service.TasksService;
 import com.JournalOne.JournalOne.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,8 @@ public class UsersEntryController {
     @Autowired
     private CustomErrorResponse customErrorResponseNotFoundError;
 
-
+    @Autowired
+    private TasksService tasksService;
     @GetMapping("/get-all-users")
     public ResponseEntity<?> getAllUsers() {
         try {
@@ -136,14 +138,10 @@ public class UsersEntryController {
         }
     }
 
-    @GetMapping("/get-quote")
-    public ResponseEntity<?> getRandomQuote() {
+    @GetMapping("/get-tasks")
+    public ResponseEntity<?> getTasks() {
         try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String username = authentication.getName();
-            User userData= userService.findByUserName(username).orElseThrow();
-
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(tasksService.getTasksList(),HttpStatus.OK);
 
         } catch (Exception e) {
 
