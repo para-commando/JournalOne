@@ -135,4 +135,24 @@ public class UsersEntryController {
                     .body(customErrorResponseInternalServerError);
         }
     }
+
+    @GetMapping("/get-quote")
+    public ResponseEntity<?> getRandomQuote() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
+            User userData= userService.findByUserName(username).orElseThrow();
+
+            return new ResponseEntity<>(HttpStatus.OK);
+
+        } catch (Exception e) {
+
+            customErrorResponseInternalServerError.setError("An error");
+            customErrorResponseInternalServerError.setMessage("An error message");
+            customErrorResponseInternalServerError.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(customErrorResponseInternalServerError);
+        }
+    }
 }
