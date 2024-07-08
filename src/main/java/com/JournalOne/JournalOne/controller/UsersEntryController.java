@@ -1,6 +1,8 @@
 package com.JournalOne.JournalOne.controller;
 
+import com.JournalOne.JournalOne.api.response.TaskApiResponseV2;
 import com.JournalOne.JournalOne.entity.User;
+import com.JournalOne.JournalOne.service.TasksService;
 import com.JournalOne.JournalOne.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,7 +25,8 @@ public class UsersEntryController {
     @Autowired
     private CustomErrorResponse customErrorResponseNotFoundError;
 
-
+    @Autowired
+    private TasksService tasksService;
     @GetMapping("/get-all-users")
     public ResponseEntity<?> getAllUsers() {
         try {
@@ -129,6 +132,39 @@ public class UsersEntryController {
 
             customErrorResponseInternalServerError.setError("Internal Server Error");
             customErrorResponseInternalServerError.setMessage("Internal Server Error Occurred, please try again");
+            customErrorResponseInternalServerError.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(customErrorResponseInternalServerError);
+        }
+    }
+
+    @GetMapping("/get-tasks")
+    public ResponseEntity<?> getTasks() {
+        try {
+
+            return new ResponseEntity<>(tasksService.getTasksList(),HttpStatus.OK);
+
+        } catch (Exception e) {
+
+            customErrorResponseInternalServerError.setError("An error");
+            customErrorResponseInternalServerError.setMessage("An error message");
+            customErrorResponseInternalServerError.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(customErrorResponseInternalServerError);
+        }
+    }
+    @PostMapping("/create-task")
+    public ResponseEntity<?> createTasks() {
+        try {
+
+            return new ResponseEntity<>(tasksService.createTask(),HttpStatus.OK);
+
+        } catch (Exception e) {
+
+            customErrorResponseInternalServerError.setError("An error");
+            customErrorResponseInternalServerError.setMessage("An error message");
             customErrorResponseInternalServerError.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .contentType(MediaType.APPLICATION_JSON)
