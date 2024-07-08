@@ -1,10 +1,12 @@
 package com.JournalOne.JournalOne.service;
 
+import com.JournalOne.JournalOne.api.response.TaskApiResponseV2;
 import com.JournalOne.JournalOne.api.response.TasksApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -31,4 +33,22 @@ public List<TasksApiResponse> getTasksList() {
     TasksApiResponse[] tasks = restTemplate.getForObject(url, TasksApiResponse[].class);
     return Arrays.asList(tasks);
 }
+    public TaskApiResponseV2 createTask(){
+        String reqBody = """
+                {
+                    "title": "foo",
+                    "body": "bar",
+                    "userId": 1
+                }""";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<String> httpEntity = new HttpEntity<>(reqBody, headers);
+        String url = "https://jsonplaceholder.typicode.com/posts";
+
+        ResponseEntity<TaskApiResponseV2> response = restTemplate.exchange(url, HttpMethod.POST, httpEntity, TaskApiResponseV2.class);
+
+        return response.getBody();
+    }
 }

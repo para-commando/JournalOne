@@ -1,5 +1,6 @@
 package com.JournalOne.JournalOne.controller;
 
+import com.JournalOne.JournalOne.api.response.TaskApiResponseV2;
 import com.JournalOne.JournalOne.entity.User;
 import com.JournalOne.JournalOne.service.TasksService;
 import com.JournalOne.JournalOne.service.UserService;
@@ -141,7 +142,24 @@ public class UsersEntryController {
     @GetMapping("/get-tasks")
     public ResponseEntity<?> getTasks() {
         try {
+
             return new ResponseEntity<>(tasksService.getTasksList(),HttpStatus.OK);
+
+        } catch (Exception e) {
+
+            customErrorResponseInternalServerError.setError("An error");
+            customErrorResponseInternalServerError.setMessage("An error message");
+            customErrorResponseInternalServerError.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(customErrorResponseInternalServerError);
+        }
+    }
+    @PostMapping("/create-task")
+    public ResponseEntity<?> createTasks() {
+        try {
+
+            return new ResponseEntity<>(tasksService.createTask(),HttpStatus.OK);
 
         } catch (Exception e) {
 
