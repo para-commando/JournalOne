@@ -4,20 +4,28 @@ import com.JournalOne.JournalOne.api.response.TaskApiResponseV2;
 import com.JournalOne.JournalOne.api.response.TasksApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.List;
 
-@Component
+// declaring it as a service is same as declaring @Component but tells the reader that this class contains the business logic necessary
+@Service
 @Slf4j
 public class TasksService {
-    private static final String apiKey="c332c4ea21bb1ce39af830288b91c69b";
 
+    // below one can be used as a value from secrets for now like env variables
+    @Value("${my_api_key}")
+    private String apiKeyOne;
+
+    @Value("${my.api.key}")
+    private String apiKeyTwo;
     private static final String apiUrl="https://jsonplaceholder.typicode.com/todos/1";
 
     @Autowired

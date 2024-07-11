@@ -1,6 +1,7 @@
 package com.JournalOne.JournalOne.controller;
 
 import com.JournalOne.JournalOne.api.response.TaskApiResponseV2;
+import com.JournalOne.JournalOne.config.AppCache;
 import com.JournalOne.JournalOne.entity.User;
 import com.JournalOne.JournalOne.service.TasksService;
 import com.JournalOne.JournalOne.service.UserService;
@@ -27,9 +28,14 @@ public class UsersEntryController {
 
     @Autowired
     private TasksService tasksService;
+
+    @Autowired
+    private AppCache appCache;
     @GetMapping("/get-all-users")
     public ResponseEntity<?> getAllUsers() {
         try {
+            // this way we can get secrets
+            appCache.APP_CACHE.get(AppCache.keyNames.KEY_NAME_ONE);
             List<?> userDetails = userService.getAllUsers();
 //            throw new Exception(); // Simulate an error for demonstration
             if (userDetails != null) {
