@@ -1,5 +1,6 @@
 package com.JournalOne.JournalOne.controller;
 
+import com.JournalOne.JournalOne.config.AppCache;
 import com.JournalOne.JournalOne.entity.User;
 import com.JournalOne.JournalOne.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,8 @@ public class AdminController {
     @Autowired
     private CustomErrorResponse customErrorResponseNotFoundError;
 
+    @Autowired
+    private AppCache appCache;
     @GetMapping("/all-users")
     public ResponseEntity<?> getAllUsers() {
         try {
@@ -59,6 +62,22 @@ public class AdminController {
                     .body(customErrorResponseNotFoundError);
         } catch (Exception e) {
 
+            customErrorResponseInternalServerError.setError("Internal Server Error");
+            customErrorResponseInternalServerError.setMessage("Internal Server Error Occurred, please try again");
+            customErrorResponseInternalServerError.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(customErrorResponseInternalServerError);
+        }
+    }
+
+    @GetMapping("reload-configs")
+    public ResponseEntity<?> reloadConfigs()
+    {
+        try {
+        appCache.init();
+        return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
             customErrorResponseInternalServerError.setError("Internal Server Error");
             customErrorResponseInternalServerError.setMessage("Internal Server Error Occurred, please try again");
             customErrorResponseInternalServerError.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
