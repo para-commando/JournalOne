@@ -19,7 +19,7 @@ public class UserRepoCritImpl {
     public List<User> getUserForSA()
     {
        Query query = new Query();
-        query.addCriteria(Criteria.where("email").exists(true).ne(null).regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$\n"));
+        query.addCriteria(Criteria.where("email").exists(true).ne(null));
         query.addCriteria(Criteria.where("sentimentAnalysis").is(true));
         query.addCriteria(Criteria.where("userName").nin("rio","bao"));
         query.addCriteria(Criteria.where("roles").in("ADMIN","USER"));
