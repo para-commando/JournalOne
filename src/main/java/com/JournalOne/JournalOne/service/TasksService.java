@@ -35,14 +35,14 @@ public class TasksService {
     private RedisService redisService;
     public TasksApiResponse getTasksList2(){
 
-        Object priorityOfTask = redisService.get("priorityOfTask");
+        TasksApiResponse priorityOfTask = redisService.get("taskResponse", TasksApiResponse.class);
         final ResponseEntity<TasksApiResponse> response = restTemplate.exchange(apiUrl, HttpMethod.GET, null, TasksApiResponse.class);
         TasksApiResponse tasksApiResponseRet = response.getBody();
         if(priorityOfTask !=null)
         {
             log.info("data fetched from redis successfully");
         } else {
-            redisService.set("priorityOfTask","VeryHigh", 300L);
+            redisService.set("taskResponse",tasksApiResponseRet, 300L);
         }
 
         return tasksApiResponseRet;

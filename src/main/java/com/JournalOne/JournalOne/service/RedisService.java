@@ -16,13 +16,16 @@ public class RedisService {
     @Autowired
     private RedisTemplate redisTemplate;
 
-    public Object get(String keyName){
+    public <T>T get(String keyName, Class<T> taskApiResponseClass){
 
         try {
             Object o = redisTemplate.opsForValue().get(keyName);
-//            ObjectMapper mapper = new ObjectMapper();
-//            return mapper.readValue(o.toString(),taskApiResponseClass);
-            return o;
+            if(o!=null) {
+                ObjectMapper mapper = new ObjectMapper();
+                return mapper.readValue(o.toString(), taskApiResponseClass);
+            }
+            return null;
+
         } catch (Exception e) {
             log.error("Exception occurred while fetching data from redis...",e);
             throw new RuntimeException(e);
@@ -31,7 +34,11 @@ public class RedisService {
 
     public void set(String keyName,Object o, Long ttl){
         try {
-             redisTemplate.opsForValue().set(keyName,o.toString(),ttl, TimeUnit.SECONDS);
+
+            ObjectMapper mapper = new ObjectMapper();
+            String jsonValue = mapper.writeValueAsString(o);
+            // if ttl was set as -1 then it will have no expiry
+             redisTemplate.opsForValue().set(keyName,jsonValue,ttl, TimeUnit.SECONDS);
             return;
         } catch (Exception e) {
             log.error("Exception occurred while fetching data from redis...",e);
