@@ -30,11 +30,22 @@ public class TasksService {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private RedisService redisService;
     public TasksApiResponse getTasksList2(){
 
+        Object priorityOfTask = redisService.get("priorityOfTask");
         final ResponseEntity<TasksApiResponse> response = restTemplate.exchange(apiUrl, HttpMethod.GET, null, TasksApiResponse.class);
-        TasksApiResponse tasksApiResponse = response.getBody();
-        return tasksApiResponse;
+        TasksApiResponse tasksApiResponseRet = response.getBody();
+        if(priorityOfTask !=null)
+        {
+            log.info("data fetched from redis successfully");
+        } else {
+            redisService.set("priorityOfTask","VeryHigh", 300L);
+        }
+
+        return tasksApiResponseRet;
     }
 public List<TasksApiResponse> getTasksList() {
     String url = "https://jsonplaceholder.typicode.com/todos/";
