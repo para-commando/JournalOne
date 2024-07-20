@@ -1,5 +1,6 @@
 package com.JournalOne.JournalOne.service;
 
+import com.JournalOne.JournalOne.enums.Sentiment;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,7 +14,7 @@ public class EmailServiceTests {
 
     @Test
     void testSendMail(){
-        emailService.sendEmail("my@gmail.com","Testing Java mail sender","Hi, this is testing");
+        emailService.sendEmail("my@gmail.com","Testing Java mail sender", Sentiment.HAPPY);
     }
 
 }
