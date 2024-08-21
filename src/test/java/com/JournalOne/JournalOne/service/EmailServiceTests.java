@@ -14,7 +14,7 @@ public class EmailServiceTests {
 
     @Test
     void testSendMail(){
-        emailService.sendEmail("my@gmail.com","Testing Java mail sender", Sentiment.HAPPY);
+        emailService.sendEmail("my@gmail.com","Testing Java mail sender", "HAPPY");
     }
 
 }

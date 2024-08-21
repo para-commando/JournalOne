@@ -27,6 +27,7 @@ public class UserScheduler {
 
     @Autowired
     private EmailService emailService;
+
     @Autowired
     private UserRepoCritImpl userRepoCrit;
 
@@ -35,14 +36,14 @@ public class UserScheduler {
 
     @Autowired
     // defining the type of key and type of data that will be sent
-    private KafkaTemplate<String, SentimentData> kafkaTemplate;
+    private KafkaTemplate<String, String> kafkaTemplate;
 
 
     // used this https://www.cronmaker.com/ to generate the below exp
     //   @Scheduled(cron = "0 0 9 ? * SUN *")
 
     // runs every minutes every day,
-  //  @Scheduled(cron = "0 0/1 * * * ?")
+   @Scheduled(cron = "0 0/1 * * * ?")
     public void fetchUserAndSendSentimentAnalysis() {
         List<User> users = userRepoCrit.getUserForSA();
         for (User user : users) {
@@ -66,11 +67,11 @@ public class UserScheduler {
                     mostFrequentSentiment = entry.getKey();
                 }
             }
-           if(mostFrequentSentiment !=null) {
+           if(mostFrequentSentiment==null) {
               // emailService.sendEmail(user.getEmail(), "Sentiment for last 7 days", mostFrequentSentiment);
-               SentimentData sentimentData = SentimentData.builder().email(user.getEmail()).sentiment("Your sentiment for last 7 days was "+ mostFrequentSentiment).build();
+               SentimentData sentimentData = SentimentData.builder().email(user.getEmail()).sentiment("Your sentiment for last 7 days was ").build();
                 // did the work of producer producing data
-               kafkaTemplate.send("weekly-sentiments",sentimentData.getEmail(),sentimentData);
+               kafkaTemplate.send("weekly-sentiments","paracommando.one@gmail.com","sentimentData");
            }
            else {
                log.info("No data related to emotions were found...");
