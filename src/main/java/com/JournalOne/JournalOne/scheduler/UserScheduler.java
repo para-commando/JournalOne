@@ -7,8 +7,10 @@ import com.JournalOne.JournalOne.repository.JournalEntryRepo;
 import com.JournalOne.JournalOne.repository.criterias.UserRepoCritImpl;
 import com.JournalOne.JournalOne.service.EmailService;
 import com.JournalOne.JournalOne.service.SentimentAnalysisSerivce;
+import com.JournalOne.JournalOne.service.SentimentData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -25,17 +27,23 @@ public class UserScheduler {
 
     @Autowired
     private EmailService emailService;
+
     @Autowired
     private UserRepoCritImpl userRepoCrit;
 
     @Autowired
     private SentimentAnalysisSerivce sentimentAnalysisSerivce;
 
+    @Autowired
+    // defining the type of key and type of data that will be sent
+    private KafkaTemplate<String, String> kafkaTemplate;
+
+
     // used this https://www.cronmaker.com/ to generate the below exp
     //   @Scheduled(cron = "0 0 9 ? * SUN *")
 
     // runs every minutes every day,
-  //  @Scheduled(cron = "0 0/1 * * * ?")
+   @Scheduled(cron = "0 0/1 * * * ?")
     public void fetchUserAndSendSentimentAnalysis() {
         List<User> users = userRepoCrit.getUserForSA();
         for (User user : users) {
@@ -59,8 +67,11 @@ public class UserScheduler {
                     mostFrequentSentiment = entry.getKey();
                 }
             }
-           if(mostFrequentSentiment !=null) {
-               emailService.sendEmail(user.getEmail(), "Sentiment for last 7 days", mostFrequentSentiment);
+           if(mostFrequentSentiment!=null) {
+              // emailService.sendEmail(user.getEmail(), "Sentiment for last 7 days", mostFrequentSentiment);
+               SentimentData sentimentData = SentimentData.builder().email(user.getEmail()).sentiment("Your sentiment for last 7 days was ").build();
+                // did the work of producer producing data
+               kafkaTemplate.send("weekly-sentiments","paracommando.one@gmail.com","sentimentData");
            }
            else {
                log.info("No data related to emotions were found...");
