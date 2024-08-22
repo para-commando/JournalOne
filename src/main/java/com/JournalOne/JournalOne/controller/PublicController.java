@@ -2,21 +2,31 @@ package com.JournalOne.JournalOne.controller;
 
 import com.JournalOne.JournalOne.entity.User;
 import com.JournalOne.JournalOne.service.UserService;
+import com.JournalOne.JournalOne.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/public")
 public class PublicController {
+    @Autowired
+    private AuthenticationManager authenticationManager;
     @Autowired
     private UserService userService;
     @Autowired
     private CustomErrorResponse customErrorResponseInternalServerError;
     @Autowired
     private CustomErrorResponse customErrorResponseNotFoundError;
+    @Autowired
+    private JwtUtil jwtUtil;
     @GetMapping("/health-check")
     public String healthCheck(){
         return "success";
@@ -45,6 +55,24 @@ public class PublicController {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(customErrorResponseInternalServerError);
         }
+    }
+
+    @PostMapping("/login-user")
+    public ResponseEntity<String> loginUser(@RequestBody User user) {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUserName(), user.getPassword()));
+            Optional<User> userDetails = userService.findByUserName(user.getUserName());
+            if (!userDetails) {
+                throw new RuntimeException("User not found");
+            } else {
+              String jwt =  jwtUtil.generateToken(user.getUserName());
+              return new ResponseEntity<>(jwt, HttpStatus.OK);
+            }
+
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+    }
+
     }
 
 }
