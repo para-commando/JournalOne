@@ -67,7 +67,7 @@ public class UserScheduler {
                     mostFrequentSentiment = entry.getKey();
                 }
             }
-           if(mostFrequentSentiment==null) {
+           if(mostFrequentSentiment!=null) {
               // emailService.sendEmail(user.getEmail(), "Sentiment for last 7 days", mostFrequentSentiment);
                SentimentData sentimentData = SentimentData.builder().email(user.getEmail()).sentiment("Your sentiment for last 7 days was ").build();
                 // did the work of producer producing data

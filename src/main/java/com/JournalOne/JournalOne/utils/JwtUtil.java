@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 @Component
 public class JwtUtil {
+    // note that the length of below key should not be more than 32 as we are using hmacSha
     private String SECRET_KEY = "TaK+HaV^uvCHEFsEVfypW#7g9^k*Z8$V";
 
     private SecretKey getSigningKey() {
@@ -39,6 +40,7 @@ public class JwtUtil {
 
     public String generateToken(String username) {
         Map<String, Object> claims = new HashMap<>();
+        // claims hashmap is used send payload which would be present inside the token
         return createToken(claims, username);
     }
 

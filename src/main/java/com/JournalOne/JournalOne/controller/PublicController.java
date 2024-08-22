@@ -57,20 +57,19 @@ public class PublicController {
         }
     }
 
-    @PostMapping("/login-user")
+    @PostMapping("/get-jwt")
     public ResponseEntity<String> loginUser(@RequestBody User user) {
         try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUserName(), user.getPassword()));
+//            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUserName(), user.getPassword()));
             Optional<User> userDetails = userService.findByUserName(user.getUserName());
-            if (!userDetails) {
-                throw new RuntimeException("User not found");
-            } else {
+
               String jwt =  jwtUtil.generateToken(user.getUserName());
               return new ResponseEntity<>(jwt, HttpStatus.OK);
-            }
+
 
         }catch (Exception e){
             System.out.println(e.getMessage());
+            throw e;
     }
 
     }
