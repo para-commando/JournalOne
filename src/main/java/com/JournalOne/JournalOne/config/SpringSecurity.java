@@ -1,5 +1,6 @@
 package com.JournalOne.JournalOne.config;
 
+import com.JournalOne.JournalOne.filter.JwtFilter;
 import com.JournalOne.JournalOne.service.UserDetailsServiceImpl;
 import org.bson.codecs.pojo.annotations.BsonCreator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +16,11 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -25,15 +28,28 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SpringSecurity {
 
     @Autowired
+    JwtFilter jwtFilter;
+    @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        return http.authorizeHttpRequests(request -> request.requestMatchers("/journalone/journals/**", "/journalone/users/**" ).authenticated().requestMatchers("/journalone/admin/**" ).hasRole("ADMIN").anyRequest().permitAll())
-                .httpBasic(Customizer.withDefaults())
+//        return http.authorizeHttpRequests(request -> request.requestMatchers("/journalone/journals/**", "/journalone/users/**" ).authenticated().requestMatchers("/journalone/admin/**" ).hasRole("ADMIN").anyRequest().permitAll())
+//                .httpBasic(Customizer.withDefaults())
+//                .csrf(AbstractHttpConfigurer::disable)
+//                .build();
+
+        return http
+                .authorizeHttpRequests(request -> request
+                        .requestMatchers("/journalone/journals/**", "/journalone/users/**").authenticated()
+                        .requestMatchers("/journalone/admin/**").hasRole("ADMIN")
+                        .anyRequest().permitAll())
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
                 .build();
+
 
     }
     @Autowired
